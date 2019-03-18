@@ -9,18 +9,14 @@ classdef real_array2 < memristor_array
     % functions, but it a wide range of algorithms can be written on top of
     % it. 
     % Construction syntax: 
-    % OBJ = REAL_ARRAY2(ROW_SELECT, COL_SELECT,ARRAY_SIZE = [128 64])
-    %
-    
-    
+    % OBJ = REAL_ARRAY2(ROW_SELECT, COL_SELECT,ARRAY_SIZE = [128 64])            
     properties
         net_size
         array
         array_size
         mask
         row_select
-        col_select
-        
+        col_select        
     end
     methods
 %%
@@ -120,17 +116,10 @@ classdef real_array2 < memristor_array
                 end
             end
             
-            % Original
-            % temp = zeros(obj.net_size(1), size(V_in,2));
-            % Corrected as
             temp = zeros(obj.array_size(1), size(V_in,2));
             temp(obj.row_select,:) = V_in;
             V_in = temp';
             
-            %temp = padarray(V_in,obj.net_corner(1)-1,0,'pre'); % throwaway
-            %V_in = padarray(temp,obj.array_size(1)-obj.net_corner(1)-obj.net_size(1)+1,0,'post');
-            
-            %[~,I_out] = evalc('obj.array.VMM_hardware(V_in, varargin{:})'); %HARDWARE CALL
             I_out = obj.array.VMM_hardware(V_in, varargin{:}); %HARDWARE CALL
             I_out = I_out(:,obj.col_select);
             I_out = I_out';
@@ -163,8 +152,7 @@ classdef real_array2 < memristor_array
             else
                 error('Not sure how to expand this input')
             end
-            
-                        
+                       
             % Second part: Expand b to array_size
             if nargin<3
                 x = 0;

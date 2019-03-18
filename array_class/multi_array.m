@@ -169,4 +169,3 @@ classdef multi_array < memristor_array
        end
     end
 end
-            

@@ -2,7 +2,6 @@ classdef subarray1 < memristor_array
     % This class is used to access multiple subsections of a base array
     % without disconnecting and reconnecting each time. The subarray must
     % be contiguous.
-    % TODO: Make this more efficient
     properties
         net_size
         net_corner
@@ -21,8 +20,7 @@ classdef subarray1 < memristor_array
                 error('Network exceeds array bounds')
             end
             
-            obj.net_size = net_size; 
-            %obj.array_size = array_size;
+            obj.net_size = net_size;             
             obj.net_corner = net_corner;
             
             % Create a logical mask showing which elements are part of the
@@ -114,8 +112,7 @@ classdef subarray1 < memristor_array
                 end
             else
                 error('Not sure how to expand this input')
-            end
-            
+            end            
                         
             % Second part: Pad b to array_size
             if nargin<3
