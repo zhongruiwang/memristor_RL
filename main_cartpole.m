@@ -1,19 +1,15 @@
-clear all; close all;
+%% The script for cart-pole problem
+clear; close all;
 
 % Constant
 MAX_EPISODE = 300; WIN_CRITERIA = 1000; NET_SIZE = [4;48;48;2];
 NET_SIZE_length = length(NET_SIZE)-1;
-RATIO_WEIGHT_CONDUCTANCE = 0.00025*ones(NET_SIZE_length,1); % 0.00005
+RATIO_WEIGHT_CONDUCTANCE = 0.00025 * ones(NET_SIZE_length, 1);
 OPTIMIZER = 'RMSprop'; SOFTWARE = false;
 
 %% Array obj and Array Interface obj
 
-%update_fun=@(G,Vm,Vt) (95e-6+10e-6*rand(size(G))-G).*(Vm<0)+...                % RESET part
-%    ((Vt-0.7).*(Vt>0.5)*98e-6+95e-6+10e-6*rand(size(G))-G).*(Vm>0).*(Vt>0.1);  % SET part
-%base = multi_array(sim_array1({'random' [128 64] 50e-6 100e-6},update_fun,0, Inf));
-
-load('Apr_9_good_row_col');
-base = multi_array(real_array2(good_row, good_col));
+base = multi_array(real_array2(1:128, 1:64));
 base.add_sub([20 1], [8 48]);
 base.add_sub([29 1], [96 48]);
 base.add_sub([20 49], [48 4]);
@@ -32,37 +28,37 @@ agent=Agent(NET_SIZE, array_interface, 'optimizer', OPTIMIZER, 'software', SOFTW
 %% Data saving
 
 % Including hardware information
-s_hist=struct('epi_num',[],'state',[],'action',[],'weights',[],'bias',[],...
-    'nabla_b',[],'nabla_w',[],'v_gate',[],'G_full',[],'I_dpe',[]);
-s_hist_pointer=1;
+s_hist = struct('epi_num', [], 'state', [], 'action', [], 'weights', [], 'bias',...
+    [], 'nabla_b', [], 'nabla_w', [], 'v_gate', [], 'G_full', [], 'I_dpe',[]);
+s_hist_pointer = 1;
 
 % Performance and loss (independent vectors)
 perf = NaN(MAX_EPISODE, 1);
-MSE_loss = NaN(MAX_EPISODE*50,1);
+MSE_loss = NaN(MAX_EPISODE * 50, 1);
 
 %% Plot
 
 % Initialize plot
-h=figure(1);
+h = figure(1);
 set(h,'name','RL','numbertitle','off','Units', 'normalized', 'Position', [0,0,1,1]);
 
-perf_panel=subplot(3,NET_SIZE_length+1,1);
-loss_panel=subplot(3,NET_SIZE_length+1,NET_SIZE_length+2);
-I_raw_panel=subplot(3,NET_SIZE_length+1,2*NET_SIZE_length+3);
+perf_panel = subplot(3, NET_SIZE_length + 1, 1);
+loss_panel = subplot(3, NET_SIZE_length + 1, NET_SIZE_length + 2);
+I_raw_panel = subplot(3, NET_SIZE_length + 1, 2*NET_SIZE_length + 3);
 
-for i=1:NET_SIZE_length 
-    G_full_panel(i)=subplot(3,NET_SIZE_length+1,1+i);
-    v_gate_panel(i)=subplot(3,NET_SIZE_length+1,NET_SIZE_length+2+i);
-    weights_panel(i)=subplot(3,NET_SIZE_length+1,NET_SIZE_length*2+3+i);
+for i = 1:NET_SIZE_length
+    G_full_panel(i) = subplot(3, NET_SIZE_length + 1, 1 + i);
+    v_gate_panel(i) = subplot(3, NET_SIZE_length + 1, NET_SIZE_length + 2 + i);
+    weights_panel(i) = subplot(3, NET_SIZE_length + 1, NET_SIZE_length * 2 + 3 + i);
 end
 
 %%
-for episode_counter=1:MAX_EPISODE   
+for episode_counter = 1:MAX_EPISODE
     
     % Start a new episode
-    stat=env.reset_episode; % Get a new state
-    episode_over_flag=0; % Episode end flag (false)
-    reward_episode=0; % Total reward of episode (zero)
+    stat = env.reset_episode; % Get a new state
+    episode_over_flag = 0; % Episode end flag (false)
+    reward_episode = 0; % Total reward of episode (zero)
     
     % Each episode
     while ~episode_over_flag
@@ -85,13 +81,14 @@ for episode_counter=1:MAX_EPISODE
         
         % The agent decides what action to take
         % Physical DPE done in replay
-        a=agent.act;
+        a = agent.act;
         
         % Display
-        display(['Step=',num2str(s_hist_pointer),' Reward=',num2str(reward_episode),' Loss=',num2str(MSE_loss(s_hist_pointer))]);
+        display(['Step=', num2str(s_hist_pointer), ' Reward=', num2str(reward_episode),...
+            ' Loss=', num2str(MSE_loss(s_hist_pointer))]);
 
         % Performs this action, get s_ (new state) and r (a reward)
-        [stat_,r,episode_over_flag]=env.nextstate(a);
+        [stat_, r, episode_over_flag] = env.nextstate(a);
         
         % Record
         s_hist(s_hist_pointer).epi_num = episode_counter; % Episode number
@@ -104,20 +101,20 @@ for episode_counter=1:MAX_EPISODE
         end
 
         % Add to memory (as a 1x4 cell array)
-        agent.observe({stat,a,r,stat_});
+        agent.observe({stat, a, r, stat_});
         
         % Cummulated reward
-        reward_episode=reward_episode+r;
+        reward_episode = reward_episode + r;
         
         % State evole
-        stat=stat_;
+        stat = stat_;
         
         % Plot perf/weights of this episode
-        if and(~mod(s_hist_pointer, 250), s_hist_pointer~=0)
-            plot_perf_weight(perf_panel,loss_panel,I_raw_panel,...
-                G_full_panel,v_gate_panel,weights_panel,...
-                perf(1:episode_counter),MSE_loss(1:s_hist_pointer),s_hist(s_hist_pointer).I_dpe,...
-                s_hist(s_hist_pointer).G_full,s_hist(s_hist_pointer).weights,s_hist(s_hist_pointer).v_gate);
+        if and(~mod(s_hist_pointer, 250), s_hist_pointer ~= 0)
+            plot_perf_weight(perf_panel, loss_panel, I_raw_panel,...
+                G_full_panel, v_gate_panel, weights_panel,...
+                perf(1:episode_counter), MSE_loss(1:s_hist_pointer), s_hist(s_hist_pointer).I_dpe,...
+                s_hist(s_hist_pointer).G_full, s_hist(s_hist_pointer).weights, s_hist(s_hist_pointer).v_gate);
         end
         
         % Increase the pointer
@@ -126,22 +123,22 @@ for episode_counter=1:MAX_EPISODE
     end
     
     % Performance of this episode
-    perf(episode_counter)=reward_episode;
+    perf(episode_counter) = reward_episode;
     
     % Exit condition (performance reached the threshold)
     if reward_episode > WIN_CRITERIA
-        plot_perf_weight(perf_panel,loss_panel,I_raw_panel,...
-            G_full_panel,v_gate_panel,weights_panel,...
-            perf(1:episode_counter),MSE_loss(1:s_hist_pointer),s_hist(s_hist_pointer).I_dpe,...
-            s_hist(s_hist_pointer).G_full,s_hist(s_hist_pointer).weights,s_hist(s_hist_pointer).v_gate);
+        plot_perf_weight(perf_panel, loss_panel, I_raw_panel,...
+            G_full_panel, v_gate_panel, weights_panel,...
+            perf(1:episode_counter), MSE_loss(1:s_hist_pointer), s_hist(s_hist_pointer).I_dpe,...
+            s_hist(s_hist_pointer).G_full, s_hist(s_hist_pointer).weights, s_hist(s_hist_pointer).v_gate);
         break
     end
 end
 
 %% Data Save
-t_now=datestr(now,'yyyymmdd HHMMSS');
-f_name1=[t_now '_cartpole.mat'];
-save(f_name1,'perf','MSE_loss','s_hist','-v7.3');
+t_now = datestr(now,'yyyymmdd HHMMSS');
+f_name1 = [t_now '_cartpole.mat'];
+save(f_name1, 'perf', 'MSE_loss', 's_hist', '-v7.3');
 
 %% Plot function
 function plot_perf_weight(perf_axes, loss_axes, I_raw_axes, ...
