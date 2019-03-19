@@ -28,9 +28,7 @@ The experimental data will be provided upon reasonable request.
 
 # LICENSE
 
-Copyright (c) 2018, 
-Department of Electrical and Computer Engineering, University of Massachusetts Amherst
-All rights reserved.
+Copyright (c) 2019 Department of Electrical and Computer Engineering, University of Massachusetts Amherst
                       
 LICENSE
 
